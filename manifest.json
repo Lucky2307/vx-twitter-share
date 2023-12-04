@@ -11,7 +11,7 @@
   },
   "content_scripts": [
     {
-      "js": ["scripts/timeline.js"],
+      "js": ["scripts/service.js"],
       "matches": ["https://twitter.com/*"]
     }
   ]
