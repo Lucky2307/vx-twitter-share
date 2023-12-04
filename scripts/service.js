@@ -71,6 +71,7 @@ async function startObserve() {
 }
 
 async function main() {
+  navigator.clipboard.readText();
   const main = await waitForElements(document.body, "[role=main]");
   await waitForElements(document.body, "[data-testid=cellInnerDiv]");
   const mainDiv = main[0].childNodes[0];
