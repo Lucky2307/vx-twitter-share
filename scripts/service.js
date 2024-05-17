@@ -71,6 +71,7 @@ async function startObserve() {
 }
 
 async function main() {
+  window.addEventListener("clipboard", (event) => console.log(event));
   navigator.clipboard.readText();
   const main = await waitForElements(document.body, "[role=main]");
   await waitForElements(document.body, "[data-testid=cellInnerDiv]");
