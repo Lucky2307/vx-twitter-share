@@ -15,6 +15,13 @@
       "matches": ["https://twitter.com/*", "https://x.com/*"]
     }
   ],
+  "permissions": [
+    "storage"
+  ],
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": false
+  },
   "browser_specific_settings": {
     "gecko": {
       "id": "vxTwitterShare@lucky.com",

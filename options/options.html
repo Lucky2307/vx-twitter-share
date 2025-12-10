@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="options.css" />
+  <title>VXTwitter options</title>
+</head>
+<body>
+    <h2>General</h2>
+    <form>
+      <div class="option">
+        <label for="domain" class="option-label">Replace domain with:</label>
+        <input type="text" id="domain" name="domain" placeholder="vxtwitter.com">
+      </div>
+      <div class="option">
+        <input type="checkbox" id="shouldSanitize" name="shouldSanitize"/>
+        <label for="shouldSanitize" class="option-label">Sanitize link</label>
+      </div>
+      <div class="example">Example <a id="exampleLink">link</a></div>
+      <div id="status"></div>
+    </form>
+  <script type="module" src="./debounce.js"></script>
+  <script type="module" src="options.js"></script>
+</body>
+</html>

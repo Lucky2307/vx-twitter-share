@@ -1,0 +1,10 @@
+.option {
+  margin-bottom: 1rem;
+}
+.option-label {
+  font-size: medium;
+}
+
+.example {
+  opacity: 0.5;
+}

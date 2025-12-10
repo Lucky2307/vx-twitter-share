@@ -21,6 +21,28 @@ function waitForElements(parent, selector) {
   });
 }
 
+async function _onClick(originalPressable) {
+  originalPressable[0].click();
+  const dropdown = await waitForElements(
+    document.body,
+    "[data-testid=Dropdown]"
+  );
+  const [copy] = dropdown[0].childNodes;
+  copy.click();
+  const link = new URL(await navigator.clipboard.readText());
+  let replacer, shouldSanitize;
+  await chrome.storage.local.get([ 'domain', 'shouldSanitize' ]).then(
+    (result) => {
+      replacer = result.domain ?? 'vxtwitter.com';
+      shouldSanitize = result.shouldSanitize ?? true;
+    }
+  );
+  const updatedOrigin = link.origin.replace("x.com", replacer);
+  const updatedLink = updatedOrigin + link.pathname + (shouldSanitize ? "" : link.search);
+  navigator.clipboard.writeText(updatedLink);
+};
+
+
 async function appendVx(post) {
   const originalPressable = await waitForElements(
     post,
@@ -30,18 +52,7 @@ async function appendVx(post) {
   const vxButton = originalButton.cloneNode(true);
   const path = vxButton.getElementsByTagName("path")[0];
   path.setAttribute("d", d);
-  vxButton.addEventListener("click", async () => {
-    originalPressable[0].click();
-    const dropdown = await waitForElements(
-      document.body,
-      "[data-testid=Dropdown]"
-    );
-    const [copy] = dropdown[0].childNodes;
-    copy.click();
-    const link = await navigator.clipboard.readText();
-    const vxLink = link.replace("x.com", "vxtwitter.com");
-    navigator.clipboard.writeText(vxLink);
-  });
+  vxButton.addEventListener("click", async () => _onClick(originalPressable));
   originalButton.parentNode.appendChild(vxButton);
 }
 
@@ -71,8 +82,6 @@ async function startObserve() {
 }
 
 async function main() {
-  window.addEventListener("clipboard", (event) => console.log(event));
-  navigator.clipboard.readText();
   const main = await waitForElements(document.body, "[role=main]");
   await waitForElements(document.body, "[data-testid=cellInnerDiv]");
   const mainDiv = main[0].childNodes[0];
