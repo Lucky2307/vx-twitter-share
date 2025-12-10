@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "VX Twitter Share Button",
-  "version": "1.1",
+  "name": "VX Twitter Share",
+  "version": "1.1.1",
   "description": "Adds a button to copy post link with 'vx' prefix to clipboard",
   "icons": {
     "16": "images/icon-16.png",
@@ -12,7 +12,7 @@
   "content_scripts": [
     {
       "js": ["scripts/service.js"],
-      "matches": ["https://twitter.com/*"]
+      "matches": ["https://twitter.com/*", "https://x.com/*"]
     }
   ],
   "browser_specific_settings": {
