@@ -1,19 +1,18 @@
-import debounce from './debounce.js';
+import debounce from '../utils/debounce.js';
 
 const saveOptions = debounce(() => {
   const domain = document.getElementById('domain').value;
   const shouldSanitize = document.getElementById('shouldSanitize').checked;
 
-  chrome.storage.local.set(
-    { domain: domain, shouldSanitize: shouldSanitize },
-    () => {
-      const status = document.getElementById('status');
-      status.textContent = 'Options saved.';
-      setTimeout(() => {
-        status.textContent = '';
-      }, 750);
-    }
-  );
+  browser.storage.local.set(
+    { domain: domain, shouldSanitize: shouldSanitize }
+  ).then(() => {
+    const status = document.getElementById('status');
+    status.textContent = 'Options saved.';
+    setTimeout(() => {
+      status.textContent = '';
+    }, 750);
+  });
 }, 500);
 
 const updateExample = (domain, shouldSanitize) => {
@@ -31,19 +30,18 @@ const onChange = () => {
 }
 
 const restoreOptions = async () => {
-  await chrome.storage.local.get(
-    ['domain', 'shouldSanitize'],
-    (items) => {
-      const {
-        domain = 'vxtwitter.com',
-        shouldSanitize = true
-      } = items
-      document.getElementById('domain').value = domain;
-      document.getElementById('shouldSanitize').checked = shouldSanitize;
+  await browser.storage.local.get(
+    ['domain', 'shouldSanitize']
+  ).then((items) => {
+    const {
+      domain = 'vxtwitter.com',
+      shouldSanitize = true
+    } = items
+    document.getElementById('domain').value = domain;
+    document.getElementById('shouldSanitize').checked = shouldSanitize;
 
-      updateExample(domain, shouldSanitize);
-    }
-  );
+    updateExample(domain, shouldSanitize);
+  });
 };
 
 document.addEventListener('keyup', onChange);

@@ -31,7 +31,7 @@ async function _onClick(originalPressable) {
   copy.click();
   const link = new URL(await navigator.clipboard.readText());
   let replacer, shouldSanitize;
-  await chrome.storage.local.get([ 'domain', 'shouldSanitize' ]).then(
+  await browser.storage.local.get([ 'domain', 'shouldSanitize' ]).then(
     (result) => {
       replacer = result.domain ?? 'vxtwitter.com';
       shouldSanitize = result.shouldSanitize ?? true;

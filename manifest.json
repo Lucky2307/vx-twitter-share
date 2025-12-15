@@ -11,7 +11,10 @@
   },
   "content_scripts": [
     {
-      "js": ["scripts/service.js"],
+      "js": [
+        "utils/browser-polyfill.min.js",
+        "scripts/service.js"
+      ],
       "matches": ["https://twitter.com/*", "https://x.com/*"]
     }
   ],
