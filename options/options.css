@@ -1,7 +1,11 @@
 @media(prefers-color-scheme: dark) {
   body {
+    min-width: 40em;
+    margin: 3em;
     color: #D4D4D4;
     background: #1E1E1E;
+    overflow: hidden;
+    font: "Arial", sans-serif;
   }
   .input-text {
     color: #D4D4D4;
@@ -11,8 +15,13 @@
 .option {
   margin-bottom: 1rem;
 }
+
 .option-label {
   font-size: medium;
+}
+
+.status {
+  position: absolute;
 }
 
 .example {
@@ -22,9 +31,34 @@
 .input-text {
   background: transparent;
   border: none;
-  border-bottom: 2px solid #ccc;
+  border-bottom: 0.1em solid #ccc;
   padding: 6px 4px;
   outline: none;
-  width: 200px;
+  width: 10em;
   font-size: 16px;
+}
+
+.tooltip {
+  position: relative;
+}
+
+.tooltip .tooltip-text {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: #fff;
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+
+.tooltip:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
 }

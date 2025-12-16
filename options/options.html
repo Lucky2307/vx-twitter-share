@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"/>
   <link rel="stylesheet" href="options.css" />
   <title>VXTwitter options</title>
 </head>
@@ -15,11 +16,13 @@
       </div>
       <div class="option">
         <input type="checkbox" id="shouldSanitize" name="shouldSanitize"/>
-        <label for="shouldSanitize" class="option-label">Sanitize link</label>
+        <label for="shouldSanitize" class="option-label">Sanitize link <span class="tooltip">
+          <i class="fa-regular fa-circle-question"></i>
+          <p class="tooltip-text">Removes any query parameters to prevent tracking.</p></span></label>
       </div>
       <div class="example">Example</div>
       <div id="exampleLink" class="example">link</div>
-      <div id="status"></div>
+      <div id="status" class="status"></div>
     </form>
   <script type="module" src="../utils/debounce.js"></script>
   <script type="application/javascript" src="../utils/browser-polyfill.min.js"></script>
