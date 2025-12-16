@@ -33,7 +33,7 @@ async function _onClick(originalPressable) {
   let replacer, shouldSanitize;
   await browser.storage.local.get([ 'domain', 'shouldSanitize' ]).then(
     (result) => {
-      replacer = result.domain ?? 'vxtwitter.com';
+      replacer = result.domain ? result.domain : 'vxtwitter.com';
       shouldSanitize = result.shouldSanitize ?? true;
     }
   );

@@ -16,7 +16,7 @@ const saveOptions = debounce(() => {
 }, 500);
 
 const updateExample = (domain, shouldSanitize) => {
-  const link = `https://${domain}/horsetwting/status/1948517385096364300${shouldSanitize ? '' : '?s=20'}`;
+  const link = `https://${domain ? domain : 'vxtwitter.com'}/horsetwting/status/1948517385096364300${shouldSanitize ? '' : '?s=20'}`;
   const exampleLink = document.getElementById('exampleLink');
   exampleLink.textContent = link;
 }
