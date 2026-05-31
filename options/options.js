@@ -1,4 +1,10 @@
-import debounce from '../utils/debounce.js';
+const debounce = (fn, delay) => {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+};
 
 const saveOptions = debounce(() => {
   const domain = document.getElementById('domain').value;
