@@ -37,39 +37,31 @@ function waitForElement(parent, selector) {
   });
 }
 
-async function getLink(originalShareButton) {
-  originalShareButton.click();
+function getPathname(originalShareButton) {
+  const pathname = originalShareButton.closest('div[data-href]')?.getAttribute('data-href');
 
-  const copySvgpath = await waitForElement(
-    document.body,
-    `path[d="${COPY_LINK_PATH}"]`,
-  );
-
-  const copyButton = copySvgpath.closest('div[role="menuitem"]');
-  copyButton.click();
-
-  return new URL(await navigator.clipboard.readText());
+  return pathname || window.location.pathname;
 }
 
-async function updateLink(link) {
-  const {
-    domain: replacer,
-    shouldSanitize = true,
-  } = await browser.storage.local.get(['domain', 'shouldSanitize']);
-  const updatedOrigin = link.origin.replace('x.com', replacer || 'vxtwitter.com');
+async function getLink(originalShareButton) {
+  const pathname = getPathname(originalShareButton);
 
-  return updatedOrigin + link.pathname + (shouldSanitize ? '' : link.search);
+  const {
+    domain,
+  } = await browser.storage.local.get(['domain']);
+  const host = domain || 'vxtwitter.com';
+
+  return new URL(`https://${host}${pathname}`);
 }
 
 async function copyUpdatedLink(originalShareButton) {
   try {
-    const link = await getLink(originalShareButton);
-    const updatedLink = await updateLink(link);
+    const url = await getLink(originalShareButton);
 
-    await navigator.clipboard.writeText(updatedLink);
+    await navigator.clipboard.writeText(url.toString());
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('[VXShare] Failed to copy link');
+    console.error('[VXShare] Failed to copy link: ', error);
   }
 }
 
