@@ -55,25 +55,6 @@ async function appendVx(originalShareButton) {
   originalShareButton.parentNode.appendChild(vxButton);
 }
 
-async function appendInitialPosts(mainUl) {
-  const posts = mainUl.querySelectorAll('li');
-  for (const post of posts) {
-    appendVx(post);
-  }
-}
-
-async function startObserve(mainUl) {
-  appendInitialPosts(mainUl);
-  const mainUlObserver = new MutationObserver((mutations) => {
-    for (const mutation of mutations) {
-      for (const addedNode of mutation.addedNodes) {
-        appendVx(addedNode);
-      }
-    }
-  });
-  mainUlObserver.observe(mainUl, {childList: true});
-}
-
 async function main() {
   const main = await waitForElements(document.body, 'main');
   const mainObserver = new MutationObserver(async (mutations) => {
