@@ -53,19 +53,24 @@ async function getLink(originalShareButton) {
 
 async function updateLink(link) {
   const {
-    domain: replacer = 'vxtwitter.com',
+    domain: replacer,
     shouldSanitize = true,
   } = await browser.storage.local.get(['domain', 'shouldSanitize']);
-  const updatedOrigin = link.origin.replace('x.com', replacer);
+  const updatedOrigin = link.origin.replace('x.com', replacer || 'vxtwitter.com');
 
   return updatedOrigin + link.pathname + (shouldSanitize ? '' : link.search);
 }
 
 async function copyUpdatedLink(originalShareButton) {
-  const link = await getLink(originalShareButton);
-  const updatedLink = await updateLink(link);
+  try {
+    const link = await getLink(originalShareButton);
+    const updatedLink = await updateLink(link);
 
-  await navigator.clipboard.writeText(updatedLink);
+    await navigator.clipboard.writeText(updatedLink);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('[VXShare] Failed to copy link');
+  }
 }
 
 async function appendVx(originalShareButton) {
@@ -98,11 +103,12 @@ function checkAddedNode(addedNode) {
 
 async function main() {
   const mainElement = await waitForElement(document.body, 'main');
+  // Populate existing timeline (like when restoring from SPA cache)
+  mainElement.querySelectorAll(SHARE_BUTTON_SELECTOR).forEach(appendVx);
+
   const mainObserver = new MutationObserver(async (mutations) => {
     mutations.forEach((mutation) => {
-      mutation.addedNodes.forEach((addedNode) => {
-        checkAddedNode(addedNode);
-      });
+      mutation.addedNodes.forEach(checkAddedNode);
     });
   });
 

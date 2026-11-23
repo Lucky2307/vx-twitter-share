@@ -15,7 +15,7 @@
         "utils/browser-polyfill.min.js",
         "scripts/service.js"
       ],
-      "matches": ["https://twitter.com/*", "https://x.com/*"]
+      "matches": ["https://x.com/*"]
     }
   ],
   "permissions": [
