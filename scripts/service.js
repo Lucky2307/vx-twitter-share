@@ -2,7 +2,7 @@ const APP_ICON = "m 2.9999997,3 7.2013523,18 h 3.597296 l 1.802028,-4.5 1.798647
 const COPY_LINK_PATH = 'M1 12a7 7 0 0 1 7-7h2v2H8a5 5 0 1 0 0 10h2v2H8a7 7 0 0 1-7-7m20 0a5 5 0 0 0-5-5h-2V5h2a7 7 0 1 1 0 14h-2v-2h2a5 5 0 0 0 5-5m-4-1v2H7v-2z';
 const SHARE_BUTTON_SELECTOR = 'button[data-engagement-action="share"]';
 
-function waitForElements(parent, selector) {
+function waitForElement(parent, selector) {
   return new Promise((resolve) => {
     if (parent.querySelector(selector)) {
       return resolve(parent.querySelector(selector));
@@ -25,7 +25,7 @@ function waitForElements(parent, selector) {
 async function _onClick(originalPressable) {
   originalPressable.click();
   
-  const copy = await waitForElements(
+  const copy = await waitForElement(
     document.body,
     `path[d="${COPY_LINK_PATH}"]`
   );
@@ -63,7 +63,7 @@ async function appendVx(originalShareButton) {
 }
 
 function checkAddedNode(addedNode) {
-  if (typeof addedNode !== Node) return;
+  if (addedNode.nodeType !== Node.ELEMENT_NODE) return;
 
   const originalShareButtons = addedNode.querySelectorAll(SHARE_BUTTON_SELECTOR);
   for (const originalShareButton of originalShareButtons) {
@@ -72,7 +72,7 @@ function checkAddedNode(addedNode) {
 }
 
 async function main() {
-  const main = await waitForElements(document.body, 'main');
+  const main = await waitForElement(document.body, 'main');
   const mainObserver = new MutationObserver(async (mutations) => {
     for (const mutation of mutations){
       for (const addedNode of mutation.addedNodes) {
