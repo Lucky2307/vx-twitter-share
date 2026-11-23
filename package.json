@@ -1,7 +1,7 @@
 {
-  "name": "vx-twitter-share",
-  "version": "1.1.4",
-  "description": "Adds a button to copy post link with 'vx' prefix to clipboard",
+  "name": "vx-twitter-utils",
+  "version": "2.0.0",
+  "description": "Copy the sanitized, embed fixed link in one click. Domain modifiable!",
   "author": "Lucky2307",
   "license": "ISC",
   "type": "module",
