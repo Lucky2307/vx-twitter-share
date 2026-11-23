@@ -1,0 +1,7 @@
+{
+  "eslint.enable": true,
+  "eslint.useFlatConfig": false,
+  "eslint.validate": ["javascript"],
+  "eslint.run": "onType",
+  "files.eol": "\n"
+}
