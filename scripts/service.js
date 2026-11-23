@@ -4,16 +4,26 @@ const SHARE_BUTTON_SELECTOR = 'button[data-engagement-action="share"]';
 
 function waitForElement(parent, selector) {
   return new Promise((resolve) => {
-    if (parent.querySelector(selector)) {
-      return resolve(parent.querySelector(selector));
+    const element = parent.querySelector(selector);
+    if (element) {
+      resolve(element);
+
+      return;
     }
 
     const observer = new MutationObserver(() => {
-      if (parent.querySelector(selector)) {
+      const element = parent.querySelector(selector);
+      if (element) {
         observer.disconnect();
-        resolve(parent.querySelector(selector));
+        clearTimeout(timeout);
+        resolve(element);
       }
     });
+
+    let timeout = setTimeout(() => {
+      observer.disconnect();
+      reject('No element detected');
+    }, 5 * 1000);
 
     observer.observe(parent, {
       childList: true,
@@ -22,27 +32,35 @@ function waitForElement(parent, selector) {
   });
 }
 
-async function _onClick(originalPressable) {
-  originalPressable.click();
+async function _getLink(originalShareButton) {
+  originalShareButton.click();
   
-  const copy = await waitForElement(
+  const copySvgpath = await waitForElement(
     document.body,
     `path[d="${COPY_LINK_PATH}"]`
   );
-  // path.svg.span.div
-  copy.parentNode.parentNode.parentNode.click();
 
-  const link = new URL(await navigator.clipboard.readText());
-  let replacer, shouldSanitize;
-  await browser.storage.local.get([ 'domain', 'shouldSanitize' ]).then(
-    (result) => {
-      replacer = result.domain ? result.domain : 'vxtwitter.com';
-      shouldSanitize = result.shouldSanitize ?? true;
-    }
-  );
+  const copyButton = copySvgpath.closest('div[role="menuitem"]');
+  copyButton.click();
+
+  return new URL(await navigator.clipboard.readText());
+};
+
+async function _updateLink(link) {
+  const {
+    domain: replacer = 'vxtwitter.com',
+    shouldSanitize = true,
+  } = await browser.storage.local.get([ 'domain', 'shouldSanitize' ]);
   const updatedOrigin = link.origin.replace("x.com", replacer);
-  const updatedLink = updatedOrigin + link.pathname + (shouldSanitize ? "" : link.search);
-  navigator.clipboard.writeText(updatedLink);
+
+  return updatedOrigin + link.pathname + (shouldSanitize ? "" : link.search);
+}
+
+async function _onClick(originalShareButton) {
+  const link = await _getLink(originalShareButton);
+  const updatedLink = await _updateLink(link)
+
+  await navigator.clipboard.writeText(updatedLink);
 };
 
 
@@ -67,7 +85,9 @@ function checkAddedNode(addedNode) {
 
   const originalShareButtons = addedNode.querySelectorAll(SHARE_BUTTON_SELECTOR);
   for (const originalShareButton of originalShareButtons) {
-    if (!originalShareButton.parentNode.querySelector('button[data-engagement-action="vxShare"]')) appendVx(originalShareButton);
+    if (originalShareButton.parentNode.querySelector('button[data-engagement-action="vxShare"]')) return;
+
+    appendVx(originalShareButton);
   }
 }
 
