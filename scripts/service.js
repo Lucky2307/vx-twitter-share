@@ -1,17 +1,17 @@
-const COPY_LINK_PATH = "M18.36 5.64c-1.95-1.96-5.11-1.96-7.07 0L9.88 7.05 8.46 5.64l1.42-1.42c2.73-2.73 7.16-2.73 9.9 0 2.73 2.74 2.73 7.17 0 9.9l-1.42 1.42-1.41-1.42 1.41-1.41c1.96-1.96 1.96-5.12 0-7.07zm-2.12 3.53l-7.07 7.07-1.41-1.41 7.07-7.07 1.41 1.41zm-12.02.71l1.42-1.42 1.41 1.42-1.41 1.41c-1.96 1.96-1.96 5.12 0 7.07 1.95 1.96 5.11 1.96 7.07 0l1.41-1.41 1.42 1.41-1.42 1.42c-2.73 2.73-7.16 2.73-9.9 0-2.73-2.74-2.73-7.17 0-9.9z";
 const APP_ICON = "m 2.9999997,3 7.2013523,18 h 3.597296 l 1.802028,-4.5 1.798647,4.5 H 21 L 17.399323,12 21,3 H 17.399323 L 15.600676,7.5 13.798648,3 H 10.201352 L 13.798648,12 12,16.5 6.6006764,3 Z m 0,0";
-
+const COPY_LINK_PATH = 'M1 12a7 7 0 0 1 7-7h2v2H8a5 5 0 1 0 0 10h2v2H8a7 7 0 0 1-7-7m20 0a5 5 0 0 0-5-5h-2V5h2a7 7 0 1 1 0 14h-2v-2h2a5 5 0 0 0 5-5m-4-1v2H7v-2z';
+const SHARE_BUTTON_SELECTOR = 'button[data-engagement-action="share"]';
 
 function waitForElements(parent, selector) {
   return new Promise((resolve) => {
     if (parent.querySelector(selector)) {
-      return resolve(parent.querySelectorAll(selector));
+      return resolve(parent.querySelector(selector));
     }
 
     const observer = new MutationObserver(() => {
       if (parent.querySelector(selector)) {
         observer.disconnect();
-        resolve(parent.querySelectorAll(selector));
+        resolve(parent.querySelector(selector));
       }
     });
 
@@ -23,16 +23,13 @@ function waitForElements(parent, selector) {
 }
 
 async function _onClick(originalPressable) {
-  originalPressable[0].click();
-  const dropdown = await waitForElements(
+  originalPressable.click();
+  const copy = await waitForElements(
     document.body,
-    "[data-testid=Dropdown]"
+    `path[d="${COPY_LINK_PATH}"]`
   );
-  const items = dropdown[0].querySelectorAll('[role="menuitem"]');
-  const copy = Array.from(items).find(
-    (item) => item.querySelector("svg path")?.getAttribute("d") === COPY_LINK_PATH
-  );
-  copy.click();
+  // path.svg.span.div
+  copy.parentNode.parentNode.parentNode.click();
   const link = new URL(await navigator.clipboard.readText());
   let replacer, shouldSanitize;
   await browser.storage.local.get([ 'domain', 'shouldSanitize' ]).then(
@@ -47,59 +44,49 @@ async function _onClick(originalPressable) {
 };
 
 
-async function appendVx(post) {
-  const originalPressable = await waitForElements(
-    post,
-    '[aria-label$="Share post"]'
-  );
-  const originalButton = originalPressable[0].parentNode.parentNode;
-  const vxButton = originalButton.cloneNode(true);
-  const path = vxButton.getElementsByTagName("path")[0];
+async function appendVx(originalShareButton) {
+  const vxButton = originalShareButton.cloneNode(true);
+  const svg = vxButton.querySelector("svg");
+  svg.setAttribute('viewBox', '0 0 26 24');
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   path.setAttribute("d", APP_ICON);
-  vxButton.addEventListener("click", async () => _onClick(originalPressable));
-  originalButton.parentNode.appendChild(vxButton);
+  svg.replaceChildren(path);
+  vxButton.addEventListener("click", async () => _onClick(originalShareButton));
+  originalShareButton.parentNode.appendChild(vxButton);
 }
 
-async function initialDivs() {
-  const cellDivs = await waitForElements(
-    document.body,
-    "[data-testid=cellInnerDiv]"
-  );
-  cellDivs.forEach((div) => {
-    appendVx(div);
-  });
+async function appendInitialPosts(mainUl) {
+  const posts = mainUl.querySelectorAll('li');
+  for (const post of posts) {
+    appendVx(post);
+  }
 }
 
-async function startObserve() {
-  await initialDivs();
-  const timeline = document.querySelector(
-    "[data-testid=cellInnerDiv]"
-  ).parentNode;
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      if (mutation.addedNodes.length > 0) {
-        appendVx(mutation.addedNodes[0]);
+async function startObserve(mainUl) {
+  appendInitialPosts(mainUl);
+  const mainUlObserver = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      for (const addedNode of mutation.addedNodes) {
+        appendVx(addedNode);
       }
-    });
+    }
   });
-  observer.observe(timeline, { childList: true });
+  mainUlObserver.observe(mainUl, {childList: true});
 }
 
 async function main() {
-  const main = await waitForElements(document.body, "[role=main]");
-  await waitForElements(document.body, "[data-testid=cellInnerDiv]");
-  const mainDiv = main[0].childNodes[0];
-  startObserve();
-  const mainObserver = new MutationObserver((mutations) => {
-    if (
-      !(
-        mutations[1].addedNodes[0].childNodes[0].getAttribute("aria-label") ===
-        "Loading"
-      )
-    )
-      startObserve();
-  });
-  mainObserver.observe(mainDiv, { childList: true });
+  const main = await waitForElements(document.body, 'main');
+  const mainObserver = new MutationObserver(async (mutations) => {
+    for (const mutation of mutations){
+      for (const addedNode of mutation.addedNodes) {
+        const originalShareButtons = addedNode.querySelectorAll(SHARE_BUTTON_SELECTOR);
+          for (const originalShareButton of originalShareButtons) {
+            appendVx(originalShareButton)
+          }
+      }
+    }
+  })
+  mainObserver.observe(main, {childList: true, subtree: true})
 }
 
 main();
