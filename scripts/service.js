@@ -24,12 +24,14 @@ function waitForElements(parent, selector) {
 
 async function _onClick(originalPressable) {
   originalPressable.click();
+  
   const copy = await waitForElements(
     document.body,
     `path[d="${COPY_LINK_PATH}"]`
   );
   // path.svg.span.div
   copy.parentNode.parentNode.parentNode.click();
+
   const link = new URL(await navigator.clipboard.readText());
   let replacer, shouldSanitize;
   await browser.storage.local.get([ 'domain', 'shouldSanitize' ]).then(
@@ -46,13 +48,27 @@ async function _onClick(originalPressable) {
 
 async function appendVx(originalShareButton) {
   const vxButton = originalShareButton.cloneNode(true);
+
+  // Replace SVG
   const svg = vxButton.querySelector("svg");
   svg.setAttribute('viewBox', '0 0 26 24');
   const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   path.setAttribute("d", APP_ICON);
   svg.replaceChildren(path);
+
   vxButton.addEventListener("click", async () => _onClick(originalShareButton));
+  vxButton.setAttribute('data-engagement-action', 'vxShare');
+
   originalShareButton.parentNode.appendChild(vxButton);
+}
+
+function checkAddedNode(addedNode) {
+  if (typeof addedNode !== Node) return;
+
+  const originalShareButtons = addedNode.querySelectorAll(SHARE_BUTTON_SELECTOR);
+  for (const originalShareButton of originalShareButtons) {
+    if (!originalShareButton.parentNode.querySelector('button[data-engagement-action="vxShare"]')) appendVx(originalShareButton);
+  }
 }
 
 async function main() {
@@ -60,13 +76,11 @@ async function main() {
   const mainObserver = new MutationObserver(async (mutations) => {
     for (const mutation of mutations){
       for (const addedNode of mutation.addedNodes) {
-        const originalShareButtons = addedNode.querySelectorAll(SHARE_BUTTON_SELECTOR);
-          for (const originalShareButton of originalShareButtons) {
-            appendVx(originalShareButton)
-          }
+        checkAddedNode(addedNode);
       }
     }
   })
+
   mainObserver.observe(main, {childList: true, subtree: true})
 }
 
