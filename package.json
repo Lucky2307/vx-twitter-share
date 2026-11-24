@@ -1,6 +1,6 @@
 {
   "name": "vx-twitter-utils",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Copy the sanitized, embed fixed link in one click. Domain modifiable!",
   "author": "Lucky2307",
   "license": "ISC",
@@ -15,8 +15,8 @@
   "scripts": {
     "postinstall": "rm -rf utils && mkdir utils && cp node_modules/webextension-polyfill/dist/browser-polyfill.min.js utils/",
     "prebuild": "rm -rf vx-twitter-share",
-    "build": "mkdir vx-twitter-share; cp ./manifest.json vx-twitter-share/ -r; cp images vx-twitter-share/ -r; cp scripts vx-twitter-share/ -r; cp options vx-twitter-share/ -r; cp utils vx-twitter-share/ -r",
-    "postbuild": "cd vx-twitter-share && zip -r ../vx-twitter-share-$npm_package_version.zip *",
+    "build": "mkdir vx-twitter-share; mkdir build; cp ./manifest.json vx-twitter-share/ -r; cp images vx-twitter-share/ -r; cp scripts vx-twitter-share/ -r; cp options vx-twitter-share/ -r; cp utils vx-twitter-share/ -r",
+    "postbuild": "cd vx-twitter-share && zip -r ../build/vx-twitter-share-$npm_package_version.zip *",
     "lint": "eslint ."
   }
 }
