@@ -8,14 +8,15 @@ const debounce = (fn, delay) => {
 
 const saveOptions = debounce(() => {
   const domain = document.getElementById('domain').value;
+  const shouldHideAds = document.getElementById('shouldHideAds').checked;
 
   browser.storage.local.set(
-    { domain },
+    { domain, shouldHideAds },
   ).then(() => {
     const status = document.getElementById('status');
     status.textContent = 'Options saved.';
     setTimeout(() => {
-      status.textContent = '';
+      status.textContent = 'Reload your X page if the options didn\'t get applied';
     }, 750);
   });
 }, 500);
@@ -35,17 +36,19 @@ const onChange = () => {
 
 const restoreOptions = async () => {
   await browser.storage.local.get(
-    ['domain'],
+    ['domain', 'shouldHideAds'],
   ).then((items) => {
     const {
       domain = 'vxtwitter.com',
-      shouldSanitize = true,
+      shouldHideAds = true,
     } = items;
     document.getElementById('domain').value = domain;
+    document.getElementById('shouldHideAds').checked = shouldHideAds;
 
-    updateExample(domain, shouldSanitize);
+    updateExample(domain);
   });
 };
 
 document.addEventListener('keyup', onChange);
+document.getElementById('shouldHideAds').addEventListener('change', onChange);
 document.addEventListener('DOMContentLoaded', restoreOptions);

@@ -14,6 +14,14 @@
         <label for="domain" class="option-label">Replace domain with:</label>
         <input type="text" class="input-text" id="domain" name="domain" placeholder="vxtwitter.com">
       </div>
+      <p class="experimental">Experimental</p>
+      <hr class="experimental"/>
+      <div class="option">
+        <input type="checkbox" id="shouldHideAds" name="shouldHideAds"/>
+        <label for="shouldHideAds" class="option-label">Hide boosted/ad posts <span class="tooltip">
+          <i class="fa-regular fa-circle-question"></i>
+          <p class="tooltip-text">Works by detecting if posts has timestamp on the top beside the poster's user handle. So far only normal posts has timestamp while boosted/ad posts don't</p></span></label>
+      </div>
       <div class="example">Example</div>
       <div id="exampleLink" class="example">link</div>
       <div id="status" class="status"></div>

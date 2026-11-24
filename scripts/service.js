@@ -1,10 +1,11 @@
 const APP_ICON = 'm 2.9999997,3 7.2013523,18 h 3.597296 l 1.802028,-4.5 1.798647,4.5 H 21 L 17.399323,12 21,3 H 17.399323 L 15.600676,7.5 13.798648,3 H 10.201352 L 13.798648,12 12,16.5 6.6006764,3 Z m 0,0';
 
-// Twitter/X's copy svg path, used to detect copy button regardless of language.
-// Update if icon changed in UI.
-const COPY_LINK_PATH = 'M1 12a7 7 0 0 1 7-7h2v2H8a5 5 0 1 0 0 10h2v2H8a7 7 0 0 1-7-7m20 0a5 5 0 0 0-5-5h-2V5h2a7 7 0 1 1 0 14h-2v-2h2a5 5 0 0 0 5-5m-4-1v2H7v-2z';
+// Twitter/X's selector for share button.
+// Update if any changes in UI.
 const SHARE_BUTTON_SELECTOR = 'button[data-engagement-action="share"]';
 const VXSHARE_BUTTON_SELECTOR = 'button[data-engagement-action="vxShare"]';
+
+const config = {};
 
 function waitForElement(parent, selector) {
   return new Promise((resolve, reject) => {
@@ -45,11 +46,7 @@ function getPathname(originalShareButton) {
 
 async function getLink(originalShareButton) {
   const pathname = getPathname(originalShareButton);
-
-  const {
-    domain,
-  } = await browser.storage.local.get(['domain']);
-  const host = domain || 'vxtwitter.com';
+  const host = config.domain || 'vxtwitter.com';
 
   return new URL(`https://${host}${pathname}`);
 }
@@ -82,18 +79,47 @@ async function appendVx(originalShareButton) {
   originalShareButton.parentNode.appendChild(vxButton);
 }
 
+// Checks if post has timestamp
+// So far only boosted/ads don't have timestamp on the posts
+function postIsAd(post) {
+  // Not on home timeline
+  if (post.closest('div[id^="urt:conversation:"]')) return false;
+
+  const header = post.querySelector('div.x-middot-group');
+  const span = header.querySelector(':scope > span');
+
+  return !span;
+}
+
 function checkAddedNode(addedNode) {
   if (addedNode.nodeType !== Node.ELEMENT_NODE) return;
 
   const originalShareButtons = addedNode.querySelectorAll(SHARE_BUTTON_SELECTOR);
   originalShareButtons.forEach((originalShareButton) => {
+    const li = originalShareButton.closest('li[data-index]');
+    if (config.shouldHideAds && li && postIsAd(li)) {
+      li.replaceChildren();
+      return;
+    }
+
     if (originalShareButton.parentNode.querySelector(VXSHARE_BUTTON_SELECTOR)) return;
 
     appendVx(originalShareButton);
   });
 }
 
+async function updateConfig() {
+  const {
+    domain,
+    shouldHideAds,
+  } = await browser.storage.local.get(['domain', 'shouldHideAds']);
+
+  config.domain = domain ?? 'vxtwitter.com';
+  config.shouldHideAds = shouldHideAds ?? true;
+}
+
 async function main() {
+  await updateConfig();
   const mainElement = await waitForElement(document.body, 'main');
   // Populate existing timeline (like when restoring from SPA cache)
   mainElement.querySelectorAll(SHARE_BUTTON_SELECTOR).forEach(appendVx);

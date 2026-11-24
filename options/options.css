@@ -54,11 +54,17 @@
   padding: 6px 8px;
   border-radius: 4px;
   font-size: 12px;
-  white-space: nowrap;
+  white-space: normal;
   transition: opacity 0.2s;
+  min-width: 40vw;
+  max-width: 80vw;
 }
 
 .tooltip:hover .tooltip-text {
   visibility: visible;
   opacity: 1;
+}
+
+.experimental {
+  opacity: 0.5;
 }
