@@ -82,10 +82,10 @@ async function appendVx(originalShareButton) {
 // Checks if post has timestamp
 // So far only boosted/ads don't have timestamp on the posts
 function postIsAd(post) {
-  // Not on home timeline
-  if (post.closest('div[id^="urt:conversation:"]')) return false;
-
+  // When clicking on a post, it has no timestamp beside the handle
   const header = post.querySelector('div.x-middot-group');
+  if (!header) return false;
+
   const span = header.querySelector(':scope > span');
 
   return !span;
