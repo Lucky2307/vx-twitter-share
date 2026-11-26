@@ -1,7 +1,7 @@
 {
   "name": "vx-twitter-utils",
   "version": "2.2.0",
-  "description": "Copy the sanitized, embed fixed link in one click. Domain modifiable!",
+  "description": "Copy the sanitized, embed fixed link of your choice in one click. Also hides Ads!",
   "author": "Lucky2307",
   "license": "ISC",
   "type": "module",
