@@ -1,4 +1,5 @@
-const APP_ICON = 'm 2.9999997,3 7.2013523,18 h 3.597296 l 1.802028,-4.5 1.798647,4.5 H 21 L 17.399323,12 21,3 H 17.399323 L 15.600676,7.5 13.798648,3 H 10.201352 L 13.798648,12 12,16.5 6.6006764,3 Z m 0,0';
+const APP_ICON = 'm 3 3 L 10.2014 21 L 13.7986 21 L 15.6007 16.5 L 17.3993 21 L 21 21 L 17.3993 12 L 21 3 L 17.3993 3 L 15.6007 7.5 L 13.7986 3 L 10.2014 3 L 13.7986 12 L 12 16.5 L 6.6007 3 Z m 0 0';
+const SUCCESS_ICON = 'm 6.7 12 L 10.2014 21 L 13.7986 21 L 15.6007 16.5 L 15.6007 16.5 L 17.3993 12 L 17.3993 12 L 21 3 L 17.3993 3 L 15.6007 7.5 L 15.6007 7.5 L 13.7986 12 L 13.7986 12 L 12 16.5 L 10 12 Z m 0 0';
 
 // Twitter/X's selector for share button.
 // Update if any changes in UI.
@@ -6,6 +7,19 @@ const SHARE_BUTTON_SELECTOR = 'button[data-engagement-action="share"]';
 const VXSHARE_BUTTON_SELECTOR = 'button[data-engagement-action="vxShare"]';
 
 const config = {};
+
+async function morphIcon(icon, to) {
+  const from = icon.getAttribute('d') || APP_ICON;
+  if (from === to) return;
+
+  icon.getAnimations().forEach((animation) => animation.cancel());
+  icon.animate(
+    [{ d: `path("${from}")` }, { d: `path("${to}")` }],
+    { duration: 160, easing: 'ease-in-out', fill: 'forwards' },
+  );
+
+  icon.setAttribute('d', to); // commit
+}
 
 function waitForElement(parent, selector) {
   return new Promise((resolve, reject) => {
@@ -51,11 +65,21 @@ async function getLink(originalShareButton) {
   return new URL(`https://${host}${pathname}`);
 }
 
-async function copyUpdatedLink(originalShareButton) {
+async function updateIcon(path) {
+  await morphIcon(path, SUCCESS_ICON);
+  path.setAttribute('fill', 'var(--x-fg-brand)');
+  setTimeout(() => {
+    path.removeAttribute('fill');
+    morphIcon(path, APP_ICON);
+  }, 1000);
+}
+
+async function copyUpdatedLink(originalShareButton, icon) {
   try {
     const url = await getLink(originalShareButton);
 
     await navigator.clipboard.writeText(url.toString());
+    updateIcon(icon);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('[VXShare] Failed to copy link: ', error);
@@ -73,7 +97,7 @@ async function appendVx(originalShareButton) {
   path.setAttribute('d', APP_ICON);
   svg.replaceChildren(path);
 
-  vxButton.addEventListener('click', async () => copyUpdatedLink(originalShareButton));
+  vxButton.addEventListener('click', async () => copyUpdatedLink(originalShareButton, path));
   vxButton.setAttribute('data-engagement-action', 'vxShare');
 
   originalShareButton.parentNode.appendChild(vxButton);
