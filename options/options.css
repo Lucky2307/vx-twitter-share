@@ -1,6 +1,7 @@
 @media(prefers-color-scheme: dark) {
   body {
     min-width: 40em;
+    width: max-content;
     margin: 3em;
     color: #D4D4D4;
     background: #1E1E1E;

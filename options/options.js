@@ -9,9 +9,10 @@ const debounce = (fn, delay) => {
 const saveOptions = debounce(() => {
   const domain = document.getElementById('domain').value;
   const shouldHideAds = document.getElementById('shouldHideAds').checked;
+  const shouldUseCompat = document.getElementById('shouldUseCompat').checked;
 
   browser.storage.local.set(
-    { domain, shouldHideAds },
+    { domain, shouldHideAds, shouldUseCompat },
   ).then(() => {
     const status = document.getElementById('status');
     status.textContent = 'Options saved.';
@@ -36,14 +37,16 @@ const onChange = () => {
 
 const restoreOptions = async () => {
   await browser.storage.local.get(
-    ['domain', 'shouldHideAds'],
+    ['domain', 'shouldHideAds', 'shouldUseCompat'],
   ).then((items) => {
     const {
       domain = 'vxtwitter.com',
       shouldHideAds = true,
+      shouldUseCompat = false,
     } = items;
     document.getElementById('domain').value = domain;
     document.getElementById('shouldHideAds').checked = shouldHideAds;
+    document.getElementById('shouldUseCompat').checked = shouldUseCompat;
 
     updateExample(domain);
   });
@@ -51,4 +54,5 @@ const restoreOptions = async () => {
 
 document.addEventListener('keyup', onChange);
 document.getElementById('shouldHideAds').addEventListener('change', onChange);
+document.getElementById('shouldUseCompat').addEventListener('change', onChange);
 document.addEventListener('DOMContentLoaded', restoreOptions);

@@ -4,7 +4,10 @@ const SUCCESS_ICON = 'm 6.7 12 L 10.2014 21 L 13.7986 21 L 15.6007 16.5 L 15.600
 // Twitter/X's selector for share button.
 // Update if any changes in UI.
 const SHARE_BUTTON_SELECTOR = 'button[data-engagement-action="share"]';
-const VXSHARE_BUTTON_SELECTOR = 'button[data-engagement-action="vxShare"]';
+const COMPAT_SHARE_BUTTON_SELECTOR = 'div:has(> div > button[aria-label="Share post"])';
+const POST_SELECTOR = 'li[data-index]';
+const COMPAT_POST_SELECTOR = 'div[data-testid="cellInnerDiv"]';
+const VXSHARE_BUTTON_SELECTOR = '[data-engagement-action="vxShare"]';
 
 const config = {};
 
@@ -58,8 +61,15 @@ function getPathname(originalShareButton) {
   return pathname || window.location.pathname;
 }
 
+function getPathnameCompat(originalShareButton) {
+  const pathname = originalShareButton.closest('div[data-testid="cellInnerDiv"]').querySelector('a[aria-label]').getAttribute('href');
+
+  return pathname || window.location.pathname;
+}
+
 async function getLink(originalShareButton) {
-  const pathname = getPathname(originalShareButton);
+  const pathname = config.shouldUseCompat
+    ? getPathnameCompat(originalShareButton) : getPathname(originalShareButton);
   const host = config.domain || 'vxtwitter.com';
 
   return new URL(`https://${host}${pathname}`);
@@ -87,6 +97,8 @@ async function copyUpdatedLink(originalShareButton, icon) {
 }
 
 async function appendVx(originalShareButton) {
+  if (originalShareButton.parentNode.querySelector(VXSHARE_BUTTON_SELECTOR)) return;
+
   const vxButton = originalShareButton.cloneNode(true);
 
   // Replace SVG
@@ -99,6 +111,9 @@ async function appendVx(originalShareButton) {
 
   vxButton.addEventListener('click', async () => copyUpdatedLink(originalShareButton, path));
   vxButton.setAttribute('data-engagement-action', 'vxShare');
+  if (config.shouldUseCompat) {
+    vxButton.style.marginLeft = '8px';
+  }
 
   originalShareButton.parentNode.appendChild(vxButton);
 }
@@ -118,15 +133,13 @@ function postIsAd(post) {
 function checkAddedNode(addedNode) {
   if (addedNode.nodeType !== Node.ELEMENT_NODE) return;
 
-  const originalShareButtons = addedNode.querySelectorAll(SHARE_BUTTON_SELECTOR);
+  const originalShareButtons = addedNode.querySelectorAll(config.SHARE_BUTTON_SELECTOR);
   originalShareButtons.forEach((originalShareButton) => {
-    const li = originalShareButton.closest('li[data-index]');
+    const li = originalShareButton.closest(config.POST_SELECTOR);
     if (config.shouldHideAds && li && postIsAd(li)) {
       li.replaceChildren();
       return;
     }
-
-    if (originalShareButton.parentNode.querySelector(VXSHARE_BUTTON_SELECTOR)) return;
 
     appendVx(originalShareButton);
   });
@@ -136,17 +149,22 @@ async function updateConfig() {
   const {
     domain,
     shouldHideAds,
-  } = await browser.storage.local.get(['domain', 'shouldHideAds']);
+    shouldUseCompat,
+  } = await browser.storage.local.get(['domain', 'shouldHideAds', 'shouldUseCompat']);
 
   config.domain = domain ?? 'vxtwitter.com';
   config.shouldHideAds = shouldHideAds ?? true;
+  config.shouldUseCompat = shouldUseCompat ?? false;
+  config.SHARE_BUTTON_SELECTOR = shouldUseCompat
+    ? COMPAT_SHARE_BUTTON_SELECTOR : SHARE_BUTTON_SELECTOR;
+  config.POST_SELECTOR = shouldUseCompat ? COMPAT_POST_SELECTOR : POST_SELECTOR;
 }
 
 async function main() {
   await updateConfig();
   const mainElement = await waitForElement(document.body, 'main');
   // Populate existing timeline (like when restoring from SPA cache)
-  mainElement.querySelectorAll(SHARE_BUTTON_SELECTOR).forEach(appendVx);
+  mainElement.querySelectorAll(config.SHARE_BUTTON_SELECTOR).forEach(appendVx);
 
   const mainObserver = new MutationObserver(async (mutations) => {
     mutations.forEach((mutation) => {
